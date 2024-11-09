@@ -69,7 +69,7 @@ int main(int argc, char *argv[]) {
         pid = getpid();  // Get the PID of the current process
         priority = parse_priority(argv[1]);
         if (priority == -1) {
-            printf(2, "Invalid priority (0-20)!\n");
+            printf(2, "Invalid! Values should be in range (0-20)!\n");
             exit();
         }
     } 
@@ -78,7 +78,7 @@ int main(int argc, char *argv[]) {
         pid = atoi(argv[1]);
         priority = parse_priority(argv[2]);
         if (priority == -1) {
-            printf(2, "Invalid priority it should be in range (0-20)!\n");
+            printf(2, "Invalid! Values should be in range (0-20)!\n");
             exit();
         }
     } 
