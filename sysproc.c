@@ -6,6 +6,12 @@
 #include "memlayout.h"
 #include "mmu.h"
 #include "proc.h"
+#include "spinlock.h"
+
+extern struct {
+  struct spinlock lock;
+  struct proc proc[NPROC];
+} ptable;
 
 int
 sys_fork(void)
@@ -88,4 +94,30 @@ sys_uptime(void)
   xticks = ticks;
   release(&tickslock);
   return xticks;
+}
+
+int
+sys_nice(void) {
+   int pid, value;
+    struct proc *p;
+
+    // Get pid and nice value from arguments
+    if (argint(0, &pid) < 0 || argint(1, &value) < 0)
+        return -1;
+
+    // Validate the range of the nice value, e.g., between 0 and 5
+    if (value < 0 || value > 5) return -1;
+
+    // Find the process and change the nice value
+    acquire(&ptable.lock);  // Lock ptable for safe access
+    for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+        if (p->pid == pid) {
+            int old_value = p->nice_value;
+            p->nice_value = value;
+            release(&ptable.lock);  // Unlock ptable after updating
+            return old_value;  // Return old nice value
+        }
+    }
+    release(&ptable.lock);  // Unlock if process not found
+    return -1;  // Process not found
 }
