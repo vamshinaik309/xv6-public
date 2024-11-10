@@ -323,30 +323,46 @@ wait(void)
 void
 scheduler(void)
 {
-  struct proc *p, *p1;
+  struct proc *p;
   struct cpu *c = mycpu();
   c->proc = 0;
-  
+
   for(;;){
     // Enable interrupts on this processor.
     sti();
-    struct proc *highP;
-    // Loop over process table looking for process to run.
     acquire(&ptable.lock);
+
+#ifdef ROUND_ROBIN
+    // Basic Round Robin Scheduler
+    for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+      if (p->state != RUNNABLE)
+        continue;
+
+      // Switch to the next RUNNABLE process in round-robin order
+      c->proc = p;
+      switchuvm(p);
+      p->state = RUNNING;
+
+      swtch(&(c->scheduler), p->context);
+      switchkvm();
+
+      // Process is done running for now.
+      c->proc = 0;
+    }
+#else
+    // Priority-based Round Robin Scheduler (existing code)
+    struct proc *p1, *highP;
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
       if(p->state != RUNNABLE)
         continue;
 
-      // Switch to chosen process.  It is the process's job
-      // to release ptable.lock and then reacquire it
-      // before jumping back to us.
       highP = p;
-      //choose one with highest priority
+      // Find process with highest priority
       for(p1 = ptable.proc; p1 < &ptable.proc[NPROC]; p1++){
-	if(p1->state != RUNNABLE)
-	  continue;
-	if(highP->priority > p1->priority)   //larger value, lower priority
-	  highP = p1;
+        if(p1->state != RUNNABLE)
+          continue;
+        if(highP->priority > p1->priority)   // larger value, lower priority
+          highP = p1;
       }
       p = highP;
       c->proc = p;
@@ -357,13 +373,16 @@ scheduler(void)
       switchkvm();
 
       // Process is done running for now.
-      // It should have changed its p->state before coming back.
       c->proc = 0;
     }
-    release(&ptable.lock);
+#endif
 
+    release(&ptable.lock);
   }
 }
+
+  
+  
   
   
 
