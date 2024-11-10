@@ -187,6 +187,7 @@ UPROGS=\
     _nice\
 	_test1\
 	_test2\
+	_primeproc\
 
 
 fs.img: mkfs README $(UPROGS)
