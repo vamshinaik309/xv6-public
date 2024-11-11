@@ -654,6 +654,12 @@ chpr(int pid, int new_priority)
     struct proc *p;
     int old_priority = -1;  // Initialize with -1 to handle cases where PID is not found
 
+    if (new_priority < 1 || new_priority > 5) {
+        // cprintf("Invalid! Values should be in range (1-5)!\n");
+        // printf(2, "Invalid! Values should be in range (1-5)!\n");
+        return -1;  // Return -1 if the priority is out of range
+    }
+
     acquire(&ptable.lock);  // Lock the process table
 
     for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
@@ -665,6 +671,10 @@ chpr(int pid, int new_priority)
     }
 
     release(&ptable.lock);  // Release the lock
+    if (old_priority == -1) {
+        // cprintf("Failed to set priority or Process not found for PID %d\n", pid);
+        // printf(2, "Failed to set priority or Process not found for PID %d\n", pid);
+    }
     return old_priority;     // Return the old priority or -1 if PID was not found
 }
 

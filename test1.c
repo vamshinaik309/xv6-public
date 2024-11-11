@@ -4,6 +4,9 @@
 #include "user.h"
 
 int main() {
+
+    printf(1, "Running test1.c tests for nice CLI calls\n");
+
     // Test 1: Set a priority out of range (9) for current process
     printf(1, "nice 9\n");
     if (fork() == 0) {

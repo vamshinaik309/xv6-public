@@ -1,35 +1,53 @@
-// test2.c
 #include "types.h"
 #include "stat.h"
 #include "user.h"
 
 int main() {
-    // Test 1: Pass a non-numeric string as priority (should fail)
-    printf(1, "nice abc\n");
-    if (fork() == 0) {
-        char *args[] = {"nice", "abc", 0};
-        exec("nice", args);
-        exit();
-    }
-    wait();
+    int pid = getpid();  // Current process PID
 
-    // Test 2: Set a priority above the allowed range (e.g., 30)
-    printf(1, "nice 30\n");
-    if (fork() == 0) {
-        char *args[] = {"nice", "30", 0};
-        exec("nice", args);
-        exit();
-    }
-    wait();
+    printf(1, "Running comprehensive tests for nice system call\n");
 
-    // Test 3: Use an invalid PID with a valid priority
-    printf(1, "nice 9999 5\n");
-    if (fork() == 0) {
-        char *args[] = {"nice", "9999", "5", 0};
-        exec("nice", args);
-        exit();
+    // Test 1: Set priority for the current process (valid range)
+    int old_priority = chpr(pid, 4);
+    if (old_priority >= 0) {
+        printf(1, "Test 1 Passed: PID %d, Old Priority %d, New Priority 4\n", pid, old_priority);
+    } else {
+        printf(1, "Test 1 Failed: Unable to change priority for current process to priority 4\n");
     }
-    wait();
 
+    // Test 2: Set out-of-range priority (25) for the current process
+    old_priority = chpr(pid, 25);
+    if (old_priority == -1) {
+        printf(1, "Test 2 Passed: Out-of-range priority (25) correctly rejected\n");
+    } else {
+        printf(1, "Test 2 Failed: Out-of-range priority not handled\n");
+    }
+
+    // Test 3: Set negative priority (-5) for the current process
+    old_priority = chpr(pid, -5);
+    if (old_priority == -1) {
+        printf(1, "Test 3 Passed: Negative priority (-5) correctly rejected\n");
+    } else {
+        printf(1, "Test 3 Failed: Negative priority not handled\n");
+    }
+
+    // Test 4: Set maximum valid priority (5) for the current process
+    old_priority = chpr(pid, 5);
+    if (old_priority >= 0) {
+        printf(1, "Test 4 Passed: PID %d, Old Priority %d, New Priority 5\n", pid, old_priority);
+    } else {
+        printf(1, "Test 4 Failed: Unable to change priority to maximum valid value 5\n");
+    }
+
+    // Test 5: Set minimum valid priority (1) for the current process
+    old_priority = chpr(pid, 1);
+    if (old_priority >= 0) {
+        printf(1, "Test 5 Passed: PID %d, Old Priority %d, New Priority 1\n", pid, old_priority);
+    } else {
+        printf(1, "Test 5 Failed: Unable to change priority to minimum valid value 1\n");
+    }
+
+
+    printf(1, "All tests completed\n");
     exit();
 }
