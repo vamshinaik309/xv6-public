@@ -24,3 +24,6 @@
 #define SYS_chpr   23
 #define SYS_getstate 24
 #define SYS_yield 25
+#define SYS_getmutex 26
+#define SYS_lock     27
+#define SYS_unlock   28

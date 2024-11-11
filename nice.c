@@ -54,7 +54,7 @@ int parse_priority(const char *str) {
     }
 
     // Check if the priority is within the valid range (0-20)
-    if (priority < 0 || priority > 20) {
+    if (priority < 0 || priority > 5) {
         return -1;  // Return -1 if the priority is out of bounds
     }
 
@@ -69,7 +69,7 @@ int main(int argc, char *argv[]) {
         pid = getpid();  // Get the PID of the current process
         priority = parse_priority(argv[1]);
         if (priority == -1) {
-            printf(2, "Invalid! Values should be in range (0-20)!\n");
+            printf(2, "Invalid! Values should be in range (1-5)!\n");
             exit();
         }
     } 
@@ -78,7 +78,7 @@ int main(int argc, char *argv[]) {
         pid = atoi(argv[1]);
         priority = parse_priority(argv[2]);
         if (priority == -1) {
-            printf(2, "Invalid! Values should be in range (0-20)!\n");
+            printf(2, "Invalid! Values should be in range (1-5)!\n");
             exit();
         }
     } 
@@ -89,8 +89,8 @@ int main(int argc, char *argv[]) {
     }
 
     // Check if the priority is within the valid range
-    if (priority < 0 || priority > 20) {
-        printf(2, "Invalid priority (0-20)!\n");
+    if (priority < 1 || priority > 5) {
+        printf(2, "Invalid! Values should be in range (1-5)!\n");
         exit();
     }
 
@@ -98,7 +98,7 @@ int main(int argc, char *argv[]) {
     old_priority = chpr(pid, priority);
     
     if (old_priority == -1) {
-        printf(2, "Failed to set priority for PID %d\n", pid);
+        printf(2, "Failed to set priority or Process not found for PID %d\n", pid);
     } else {
         // Print PID and old priority in the desired format
         printf(1, "%d %d\n", pid, old_priority);

@@ -107,6 +107,10 @@ extern int sys_cps(void);
 extern int sys_chpr(void);
 extern int sys_getstate(void);
 extern int sys_yield(void);
+extern int sys_getmutex(void);
+extern int sys_lock(void);
+extern int sys_unlock(void);
+
 
 static int (*syscalls[])(void) = {
 [SYS_fork]    sys_fork,
@@ -134,6 +138,9 @@ static int (*syscalls[])(void) = {
 [SYS_chpr]    sys_chpr,
 [SYS_getstate] sys_getstate,
 [SYS_yield] sys_yield,
+[SYS_getmutex] sys_getmutex,
+[SYS_lock]     sys_lock,
+[SYS_unlock]   sys_unlock,
 };
 
 void

@@ -3,6 +3,22 @@
 #include "stat.h"
 #include "user.h"
 
+int mutexid; 
+
+void 
+forloop(int num)
+{
+    int x =0;
+    for(int z = 0; z < 3000000000; z+=1)
+	    x = x + 3.14*89.64;
+}
+
+void wait_for_seconds(int seconds) {
+    int start_ticks = uptime();  
+    while (uptime() - start_ticks < seconds * 100) {
+    }
+}
+
 int
 is_prime(int num)
 {
@@ -15,36 +31,30 @@ is_prime(int num)
     return 1;
 }
 
-void delay_seconds(int seconds) {
-    int start_ticks = uptime();
-    while (uptime() - start_ticks < seconds * 100); // Assuming 100 ticks per second
-}
-
 void
-calculate_primes(int limit)
+calculate_primes(int limit, int mutexid)
 {
-    int num = 2; // Starting number to check for primality
-    int count = 0; // Number of primes found
+    int num = 2;
+    int count = 0; 
 
     while(count < limit) {
         if(is_prime(num)) {
-            // Print the prime number
-            // printf(1, "PID %d: %d\n", getpid(), num);
-            printf(1, "PID %d: Prime #%d: %d\n", getpid(), count + 1, num);
-            count++;
+            lock(mutexid);
+            printf(1, "PID%d:Prime%d:%d\n", getpid(), count + 1, num);
+            unlock(mutexid); 
 
-            // Sleep to prevent output overflow
-            delay_seconds(1);
+            count++;
+            wait_for_seconds(1); 
             sleep(1);
         }
-        num++; // Move to the next number
+        num++; 
     }
 }
 
 int
 main(int argc, char *argv[])
 {
-    int n = 1; // Default number of child processes
+    int n = 1; 
 
     if(argc > 1)
         n = atoi(argv[1]);
@@ -54,25 +64,27 @@ main(int argc, char *argv[])
 
     int k, pid;
 
+    mutexid = getmutex();
+    if(mutexid < 0){
+        printf(1, "Error: Unable to get mutex\n");
+        exit();
+    }
+
     for(k = 0; k < n; k++) {
         pid = fork();
         if(pid < 0) {
             printf(1, "Error: fork failed\n");
             exit();
         } else if(pid == 0) {
-            // Child process
             printf(1, "Child %d started\n", getpid());
-            calculate_primes(1000); // Adjust the limit as needed
+            calculate_primes(1000, mutexid); 
             printf(1, "Child %d finished\n", getpid());
             exit();
         } else {
-            // Parent process
             printf(1, "Parent %d created child %d\n", getpid(), pid);
-            // Optionally, you can remove the wait() here to have all children run concurrently
         }
     }
 
-    // Parent waits for all child processes to finish
     for(k = 0; k < n; k++) {
         wait();
     }
