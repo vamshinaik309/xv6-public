@@ -5,33 +5,62 @@
 
 #define TICKS_PER_SECOND 100 // Assuming 100 ticks per second in xv6
 
+// Simple integer-to-string conversion function
+void itoa(int num, char *str) {
+    int i = 0;
+    if (num == 0) {
+        str[i++] = '0';
+    } else {
+        // Handle the number and convert to string in reverse order
+        while (num != 0) {
+            str[i++] = (num % 10) + '0';
+            num /= 10;
+        }
+    }
+    str[i] = '\0';
+
+    // Reverse the string
+    for (int j = 0; j < i / 2; j++) {
+        char temp = str[j];
+        str[j] = str[i - j - 1];
+        str[i - j - 1] = temp;
+    }
+}
+
 int main() {
+    int pid;
+
     // Run primeproc with argument 3 in the background
     printf(1, "Running 'primeproc 3 &' in the background\n");
-    if (fork() == 0) { // Child process to execute primeproc
+    pid = fork();
+    if (pid == 0) { // Child process to execute primeproc
         char *args[] = {"primeproc", "3", 0};
         exec("primeproc", args);
         exit();
+    } else if (pid > 0) {
+        printf(1, "Parent %d created child %d\n", getpid(), pid);
+    } else {
+        printf(1, "Failed to fork primeproc\n");
+        exit();
     }
 
-    // Busy-wait for 2 seconds (approx 200 ticks)
-    // int start_ticks = uptime(); // Get current uptime in ticks
-    // while (uptime() - start_ticks < 2 * TICKS_PER_SECOND); // Wait until 2 seconds have passed
-    // sleep(5);
-    int ii=0;
-    int x=0;
-    for (ii=0;ii<=4000000000;ii++){
-        x=x+3.46;
-    }
-    // Run the nice command to set priority for PID 3 to 6
-    printf(1, "\nRunning 'nice 6 3'\n");
+    // Busy-wait for approximately 1 second to ensure primeproc starts
+    int start_ticks = uptime();
+    while (uptime() - start_ticks < TICKS_PER_SECOND);
+
+    // Run the nice command to set priority to 7 for the captured PID
+    printf(1, "\nRunning 'nice 7 %d'\n", pid);
     if (fork() == 0) { // Child process to execute nice
-        char *args[] = {"nice", "6", "3", 0};
+        char pid_str[10];
+        itoa(pid, pid_str); // Convert PID to string for exec arguments
+        char *args[] = {"nice", "7", pid_str, 0};
         exec("nice", args);
         exit();
     }
     wait(); // Wait for the nice command to complete
 
+    // Wait for all child processes to finish
+    wait();
+
     exit();
 }
-

@@ -13,7 +13,8 @@ int main() {
     }
 
     // Add a slight delay to ensure primeproc has time to start
-    sleep(5);
+    int start_ticks = uptime();
+    while (uptime() - start_ticks < 100);
 
     // Run the ps command to display process status
     printf(1, "\nRunning 'ps' to display process statuses\n");
