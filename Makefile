@@ -188,6 +188,9 @@ UPROGS=\
     _nice\
 	_test1\
 	_test2\
+	_task2_test1\
+    _task2_test2\
+	_task2_test3\
 	_primeproc\
 
 

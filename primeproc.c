@@ -40,12 +40,12 @@ calculate_primes(int limit, int mutexid)
     while(count < limit) {
         if(is_prime(num)) {
             lock(mutexid);
-            printf(1, "PID%d:Prime%d:%d\n", getpid(), count + 1, num);
+            printf(1, "PID %d printing %d th Prime number:%d\n", getpid(), count + 1, num);
             unlock(mutexid); 
 
             count++;
             wait_for_seconds(1); 
-            sleep(1);
+            // sleep(1);
         }
         num++; 
     }
