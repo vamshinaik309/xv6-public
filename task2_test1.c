@@ -1,30 +1,90 @@
-// task2_test1.c
+// task2_test3.c
 #include "types.h"
 #include "stat.h"
 #include "user.h"
 
+void itoa(int num, char *str) {
+    int i = 0;
+    if (num == 0) {
+        str[i++] = '0';
+    } else {
+        // Handle each digit and convert to string in reverse order
+        int temp = num;
+        while (temp != 0) {
+            str[i++] = (temp % 10) + '0';
+            temp /= 10;
+        }
+    }
+    str[i] = '\0';
+
+    // Reverse the string
+    for (int j = 0; j < i / 2; j++) {
+        char swap = str[j];
+        str[j] = str[i - j - 1];
+        str[i - j - 1] = swap;
+    }
+}
+
 int main() {
-    // Run primeproc with argument 3 in the background
+    int pid;
+    int pipe_fd[2];
+
+    if (pipe(pipe_fd) < 0) {
+        printf(1, "Error: Unable to create pipe\n");
+        exit();
+    }
+
+    // Run 'primeproc 3 &' in the background
     printf(1, "Running 'primeproc 3 &' in the background\n");
-    if (fork() == 0) { // Child process to execute primeproc
-        char *args[] = {"primeproc", "3", 0};
+    pid = fork();
+    if (pid == 0) { // Child process to execute primeproc
+        close(pipe_fd[0]); // Close read end in child
+
+        // Convert write end file descriptor to string
+        char fd_str[10];
+        itoa(pipe_fd[1], fd_str);
+
+        char *args[] = {"primeproc", "3", fd_str, 0};
         exec("primeproc", args);
+        printf(1, "Error: exec primeproc failed\n");
+        exit();
+    } else if (pid > 0) {
+        close(pipe_fd[1]); // Close write end in parent
+
+        // Wait for the signal from primeproc
+        char buf[5];
+        int n = read(pipe_fd[0], buf, 4);
+        if (n != 4) {
+            printf(1, "Error: Did not receive proper signal from primeproc\n");
+            exit();
+        }
+        buf[4] = '\0';
+        if (strcmp(buf, "done") == 0) {
+            printf(1, "\nAll children of primeproc are created and running.\n");
+        } else {
+            printf(1, "Error: Received unexpected signal from primeproc: %s\n", buf);
+            exit();
+        }
+        close(pipe_fd[0]); // Close read end
+
+        char pid_str[10];
+        itoa(pid, pid_str);
+        if (fork() == 0) { // Child process to execute nice
+            char *args[] = {"ps", 0};
+            printf(1, "\nRunning 'ps'\n", pid_str);
+            exec("ps", args);
+            printf(1, "Error: exec ps failed\n");
+            exit();
+        }
+        wait(); // Wait for nice to complete
+
+
+        // Wait for primeproc to finish
+        wait();
+    } else {
+        printf(1, "Error: fork failed\n");
         exit();
     }
 
-    // Add a slight delay to ensure primeproc has time to start
-    int start_ticks = uptime();
-    while (uptime() - start_ticks < 100);
-
-    // Run the ps command to display process status
-    printf(1, "\nRunning 'ps' to display process statuses\n");
-    if (fork() == 0) { // Child process to execute ps
-        char *args[] = {"ps", 0};
-        exec("ps", args);
-        exit();
-    }
-    
-    // Wait for all child processes to finish
-    wait();
     exit();
 }

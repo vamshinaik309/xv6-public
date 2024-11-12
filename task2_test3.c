@@ -67,27 +67,17 @@ int main() {
         }
         close(pipe_fd[0]); // Close read end
 
-        // Run 'nice 7 <pid>' where <pid> is the PID of primeproc
         char pid_str[10];
         itoa(pid, pid_str);
-        printf(1, "\nRunning 'nice 7 %s'\n", pid_str);
         if (fork() == 0) { // Child process to execute nice
             char *args[] = {"nice", "7", "3", 0};
+            printf(1, "\nRunning 'nice 7 3'\n", pid_str);
             exec("nice", args);
             printf(1, "Error: exec nice failed\n");
             exit();
         }
         wait(); // Wait for nice to complete
 
-        // Optionally, run 'ps' to display process statuses
-        printf(1, "\nRunning 'ps' to display process statuses\n");
-        if (fork() == 0) { // Child process to execute ps
-            char *args[] = {"ps", 0};
-            exec("ps", args);
-            printf(1, "Error: exec ps failed\n");
-            exit();
-        }
-        wait(); // Wait for ps to complete
 
         // Wait for primeproc to finish
         wait();

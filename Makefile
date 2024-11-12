@@ -186,8 +186,8 @@ UPROGS=\
     _ps\
     _dpro\
     _nice\
-	_test1\
-	_test2\
+	_task1_test1\
+	_task1_test2\
 	_task2_test1\
     _task2_test2\
 	_task2_test3\

@@ -375,11 +375,6 @@ scheduler(void)
       switchuvm(p);
       p->state = RUNNING;
 
-      /*
-      Save current registers in c->scheduler which points to a struct context
-      Load registers from process's context
-      */
-
       swtch(&(c->scheduler), p->context);
       switchkvm();
 
