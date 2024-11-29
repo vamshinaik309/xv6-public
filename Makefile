@@ -191,6 +191,7 @@ UPROGS=\
 	_task2_test1\
     _task2_test2\
 	_task2_test3\
+	_tail_vv2289\
 	_primeproc\
 
 
